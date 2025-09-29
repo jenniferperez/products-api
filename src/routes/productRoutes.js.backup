@@ -1,0 +1,519 @@
+const express = require('express');
+const router = express.Router();
+
+// Importar controladores
+const {
+  getProducts,
+  getProduct,
+  getBulkProducts,
+  getProductStats,
+  getProductsByPriceRange,
+  getProductsByRating,
+  searchProductsBySpec
+} = require('../controllers/productController');
+
+// Importar middleware de validación
+const {
+  paginationSchema,
+  productIdSchema,
+  bulkIdsSchema,
+  validateQuery,
+  validateParams,
+  sanitizeInput
+} = require('../middleware/validation');
+
+// Importar middleware de seguridad
+const { searchRateLimit } = require('../middleware/security');
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Product:
+ *       type: object
+ *       required:
+ *         - id
+ *         - name
+ *         - price
+ *         - description
+ *         - image_url
+ *         - rating
+ *         - specs
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID único del producto
+ *           example: 1
+ *         name:
+ *           type: string
+ *           description: Nombre del producto
+ *           example: "iPhone 15 Pro"
+ *         price:
+ *           type: number
+ *           format: float
+ *           description: Precio del producto
+ *           example: 999.99
+ *         description:
+ *           type: string
+ *           description: Descripción del producto
+ *           example: "El iPhone más avanzado con chip A17 Pro"
+ *         image_url:
+ *           type: string
+ *           format: uri
+ *           description: URL de la imagen del producto
+ *           example: "https://example.com/images/iphone15pro.jpg"
+ *         rating:
+ *           type: number
+ *           format: float
+ *           minimum: 0
+ *           maximum: 5
+ *           description: Calificación del producto
+ *           example: 4.8
+ *         specs:
+ *           type: object
+ *           description: Especificaciones técnicas del producto
+ *           example: {"Pantalla": "6.1 pulgadas", "Procesador": "A17 Pro"}
+ *     
+ *     Pagination:
+ *       type: object
+ *       properties:
+ *         page:
+ *           type: integer
+ *           minimum: 1
+ *           description: Número de página
+ *           example: 1
+ *         limit:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           description: Cantidad de productos por página
+ *           example: 10
+ *         total:
+ *           type: integer
+ *           description: Total de productos
+ *           example: 100
+ *         totalPages:
+ *           type: integer
+ *           description: Total de páginas
+ *           example: 10
+ *         hasNext:
+ *           type: boolean
+ *           description: Indica si hay página siguiente
+ *           example: true
+ *         hasPrev:
+ *           type: boolean
+ *           description: Indica si hay página anterior
+ *           example: false
+ *     
+ *     Error:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               description: Mensaje de error
+ *               example: "Producto no encontrado"
+ *             code:
+ *               type: string
+ *               description: Código de error
+ *               example: "PRODUCT_NOT_FOUND"
+ *             details:
+ *               type: array
+ *               description: Detalles adicionales del error
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   field:
+ *                     type: string
+ *                   message:
+ *                     type: string
+ */
+
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Obtener lista paginada de productos
+ *     description: Retorna una lista paginada de productos con opción de búsqueda
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Cantidad de productos por página
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *           maxLength: 100
+ *         description: Término de búsqueda (opcional)
+ *     responses:
+ *       200:
+ *         description: Lista de productos obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
+ *       400:
+ *         description: Parámetros de consulta inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       429:
+ *         description: Límite de velocidad excedido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/', 
+  sanitizeInput,
+  validateQuery(paginationSchema),
+  getProducts
+);
+
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   get:
+ *     summary: Obtener un producto por ID
+ *     description: Retorna los detalles de un producto específico
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: ID del producto
+ *     responses:
+ *       200:
+ *         description: Producto obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: ID de producto inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Producto no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * @swagger
+ * /api/products/bulk:
+ *   get:
+ *     summary: Obtener múltiples productos por IDs
+ *     description: Retorna una lista de productos basada en una lista de IDs
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: ids
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9,]+$'
+ *           maxLength: 500
+ *         description: Lista de IDs separados por comas (máximo 20)
+ *         example: "1,2,3,4,5"
+ *     responses:
+ *       200:
+ *         description: Productos obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 count:
+ *                   type: integer
+ *                   description: Cantidad de productos obtenidos
+ *                   example: 5
+ *       400:
+ *         description: Lista de IDs inválida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Uno o más productos no encontrados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/bulk',
+  sanitizeInput,
+  validateQuery(bulkIdsSchema),
+  getBulkProducts
+);
+
+router.get('/:id',
+  sanitizeInput,
+  validateParams(productIdSchema),
+  getProduct
+);
+
+/**
+ * @swagger
+ * /api/products/stats:
+ *   get:
+ *     summary: Obtener estadísticas de productos
+ *     description: Retorna estadísticas generales de todos los productos
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       example: 100
+ *                     averagePrice:
+ *                       type: number
+ *                       format: float
+ *                       example: 599.99
+ *                     averageRating:
+ *                       type: number
+ *                       format: float
+ *                       example: 4.5
+ *                     priceRange:
+ *                       type: object
+ *                       properties:
+ *                         min:
+ *                           type: number
+ *                           example: 99.99
+ *                         max:
+ *                           type: number
+ *                           example: 1299.99
+ *                     ratingRange:
+ *                       type: object
+ *                       properties:
+ *                         min:
+ *                           type: number
+ *                           example: 3.5
+ *                         max:
+ *                           type: number
+ *                           example: 4.9
+ */
+router.get('/stats',
+  getProductStats
+);
+
+/**
+ * @swagger
+ * /api/products/search/price:
+ *   get:
+ *     summary: Buscar productos por rango de precio
+ *     description: Retorna productos dentro de un rango de precio específico
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Precio mínimo
+ *         example: 100
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Precio máximo
+ *         example: 500
+ *     responses:
+ *       200:
+ *         description: Productos encontrados exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 count:
+ *                   type: integer
+ *                   example: 25
+ *                 priceRange:
+ *                   type: object
+ *                   properties:
+ *                     min:
+ *                       type: number
+ *                       example: 100
+ *                     max:
+ *                       type: number
+ *                       example: 500
+ *       400:
+ *         description: Rango de precios inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/search/price',
+  sanitizeInput,
+  searchRateLimit,
+  getProductsByPriceRange
+);
+
+/**
+ * @swagger
+ * /api/products/search/rating:
+ *   get:
+ *     summary: Buscar productos por rating mínimo
+ *     description: Retorna productos con rating mayor o igual al especificado
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: minRating
+ *         required: true
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *           maximum: 5
+ *         description: Rating mínimo requerido
+ *         example: 4.5
+ *     responses:
+ *       200:
+ *         description: Productos encontrados exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 count:
+ *                   type: integer
+ *                   example: 15
+ *                 minRating:
+ *                   type: number
+ *                   example: 4.5
+ *       400:
+ *         description: Rating inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/search/rating',
+  sanitizeInput,
+  searchRateLimit,
+  getProductsByRating
+);
+
+/**
+ * @swagger
+ * /api/products/search/specs:
+ *   get:
+ *     summary: Buscar productos por especificaciones
+ *     description: Retorna productos que contienen una especificación específica
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: spec
+ *         required: true
+ *         schema:
+ *           type: string
+ *           minLength: 1
+ *         description: Especificación a buscar
+ *         example: "A17 Pro"
+ *     responses:
+ *       200:
+ *         description: Productos encontrados exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 count:
+ *                   type: integer
+ *                   example: 3
+ *                 searchTerm:
+ *                   type: string
+ *                   example: "A17 Pro"
+ *       400:
+ *         description: Parámetro de búsqueda inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/search/specs',
+  sanitizeInput,
+  searchRateLimit,
+  searchProductsBySpec
+);
+
+module.exports = router;

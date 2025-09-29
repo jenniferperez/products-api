@@ -1,0 +1,15 @@
+# Documentación generada
+swagger.json
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de backup
+*.backup
+*.bak
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
