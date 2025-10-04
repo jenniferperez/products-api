@@ -9,7 +9,7 @@ describe('errorUtils', () => {
   describe('AppError', () => {
     test('should create AppError instance with correct properties', () => {
       const error = new AppError('Test error', 400, 'TEST_ERROR');
-      
+
       expect(error.message).toBe('Test error');
       expect(error.statusCode).toBe(400);
       expect(error.code).toBe('TEST_ERROR');
@@ -19,7 +19,7 @@ describe('errorUtils', () => {
 
     test('should capture stack trace', () => {
       const error = new AppError('Test error', 400, 'TEST_ERROR');
-      
+
       expect(error.stack).toBeDefined();
       expect(typeof error.stack).toBe('string');
     });
@@ -28,7 +28,7 @@ describe('errorUtils', () => {
   describe('createError', () => {
     test('should create AppError with default values', () => {
       const error = createError('Test error');
-      
+
       expect(error).toBeInstanceOf(AppError);
       expect(error.message).toBe('Test error');
       expect(error.statusCode).toBe(500);
@@ -37,7 +37,7 @@ describe('errorUtils', () => {
 
     test('should create AppError with custom values', () => {
       const error = createError('Custom error', 404, 'NOT_FOUND');
-      
+
       expect(error).toBeInstanceOf(AppError);
       expect(error.message).toBe('Custom error');
       expect(error.statusCode).toBe(404);
@@ -81,16 +81,16 @@ describe('errorUtils', () => {
   describe('validateProductExists', () => {
     test('should return product when it exists', () => {
       const mockGetProductById = jest.fn().mockReturnValue(testProducts[0]);
-      
+
       const result = validateProductExists(1, mockGetProductById);
-      
+
       expect(result).toEqual(testProducts[0]);
       expect(mockGetProductById).toHaveBeenCalledWith(1);
     });
 
     test('should throw error when product does not exist', () => {
       const mockGetProductById = jest.fn().mockReturnValue(null);
-      
+
       expect(() => {
         validateProductExists(999, mockGetProductById);
       }).toThrow('Producto con ID 999 no encontrado');
@@ -98,7 +98,7 @@ describe('errorUtils', () => {
 
     test('should throw AppError with correct properties', () => {
       const mockGetProductById = jest.fn().mockReturnValue(null);
-      
+
       try {
         validateProductExists(999, mockGetProductById);
       } catch (error) {
@@ -112,16 +112,16 @@ describe('errorUtils', () => {
   describe('validateProductsExist', () => {
     test('should return products when all exist', () => {
       const mockGetProductsByIds = jest.fn().mockReturnValue([testProducts[0], testProducts[1]]);
-      
+
       const result = validateProductsExist([1, 2], mockGetProductsByIds);
-      
+
       expect(result).toEqual([testProducts[0], testProducts[1]]);
       expect(mockGetProductsByIds).toHaveBeenCalledWith([1, 2]);
     });
 
     test('should throw error when some products do not exist', () => {
       const mockGetProductsByIds = jest.fn().mockReturnValue([testProducts[0]]);
-      
+
       expect(() => {
         validateProductsExist([1, 2], mockGetProductsByIds);
       }).toThrow('Los siguientes productos no fueron encontrados: 2');
@@ -129,7 +129,7 @@ describe('errorUtils', () => {
 
     test('should throw AppError with correct properties', () => {
       const mockGetProductsByIds = jest.fn().mockReturnValue([testProducts[0]]);
-      
+
       try {
         validateProductsExist([1, 2], mockGetProductsByIds);
       } catch (error) {

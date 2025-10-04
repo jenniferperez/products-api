@@ -13,7 +13,7 @@ const sanitizeInput = (req, res, next) => {
   // Función para sanitizar strings
   const sanitizeString = (str) => {
     if (typeof str !== 'string') return str;
-    
+
     return str
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remover scripts
       .replace(/<[^>]*>/g, '') // Remover tags HTML
@@ -53,11 +53,11 @@ const sanitizeInput = (req, res, next) => {
 const validatePriceRange = (minPrice, maxPrice) => {
   const min = parseFloat(minPrice) || 0;
   const max = parseFloat(maxPrice) || Infinity;
-  
+
   if (min < 0 || max < 0 || min > max) {
     throw new Error('Rango de precios inválido');
   }
-  
+
   return { min, max };
 };
 
@@ -69,11 +69,11 @@ const validatePriceRange = (minPrice, maxPrice) => {
  */
 const validateRating = (minRating) => {
   const min = parseFloat(minRating) || 0;
-  
+
   if (min < 0 || min > 5) {
     throw new Error('Rating mínimo debe estar entre 0 y 5');
   }
-  
+
   return min;
 };
 
@@ -87,7 +87,7 @@ const validateSearchTerm = (searchTerm) => {
   if (!searchTerm || typeof searchTerm !== 'string' || searchTerm.trim().length === 0) {
     throw new Error('Término de búsqueda requerido');
   }
-  
+
   return searchTerm.trim();
 };
 
@@ -101,15 +101,15 @@ const parseIdsString = (idsString) => {
   if (!idsString || typeof idsString !== 'string') {
     throw new Error('Parámetro ids es requerido');
   }
-  
+
   const ids = idsString.split(',').map(id => parseInt(id.trim()));
-  
+
   // Validar que todos los IDs sean números válidos
   const invalidIds = ids.filter(id => isNaN(id) || id <= 0);
   if (invalidIds.length > 0) {
     throw new Error('Todos los IDs deben ser números positivos');
   }
-  
+
   return ids;
 };
 

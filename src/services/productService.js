@@ -31,19 +31,19 @@ class ProductService {
    */
   async getProducts(params = {}) {
     const { page = 1, limit = 10, query = '' } = params;
-    
+
     // Validar parámetros de paginación
     if (page < 1) {
       throw new Error('El número de página debe ser mayor a 0');
     }
-    
+
     if (limit < 1 || limit > 100) {
       throw new Error('El límite debe estar entre 1 y 100');
     }
-    
+
     // Obtener productos paginados
     const result = getPaginatedProducts(page, limit, query);
-    
+
     return {
       products: result.products,
       pagination: result.pagination,
@@ -60,7 +60,7 @@ class ProductService {
   async getProductById(id) {
     // Validar que el producto existe
     const product = validateProductExists(id, getProductById);
-    
+
     return {
       product,
       found: true
@@ -76,10 +76,10 @@ class ProductService {
   async getBulkProducts(idsString) {
     // Convertir string de IDs a array
     const idsArray = parseIdsString(idsString);
-    
+
     // Validar que todos los productos existen
     const products = validateProductsExist(idsArray, getProductsByIds);
-    
+
     return {
       products,
       count: products.length,
@@ -94,10 +94,10 @@ class ProductService {
    */
   async getProductStats() {
     const products = getAllProducts();
-    
+
     // Calcular estadísticas usando utilidad
     const stats = calculateProductStats(products);
-    
+
     // Agregar lógica de negocio adicional
     const enhancedStats = {
       ...stats,
@@ -106,7 +106,7 @@ class ProductService {
       ratingDistribution: this._analyzeRatingDistribution(products),
       lastUpdated: new Date().toISOString()
     };
-    
+
     return enhancedStats;
   }
 
@@ -120,18 +120,18 @@ class ProductService {
    */
   async getProductsByPriceRange(params) {
     const { minPrice, maxPrice } = params;
-    
+
     // Validar parámetros de precio
     const { min, max } = validatePriceRange(minPrice, maxPrice);
-    
+
     const products = getAllProducts();
-    
+
     // Filtrar productos
     const filteredProducts = filterProductsByPriceRange(products, min, max);
-    
+
     // Agregar análisis de negocio
     const analysis = this._analyzePriceRangeResults(filteredProducts, min, max);
-    
+
     return {
       products: filteredProducts,
       count: filteredProducts.length,
@@ -149,18 +149,18 @@ class ProductService {
    */
   async getProductsByRating(params) {
     const { minRating } = params;
-    
+
     // Validar parámetro de rating
     const min = validateRating(minRating);
-    
+
     const products = getAllProducts();
-    
+
     // Filtrar productos
     const filteredProducts = filterProductsByRating(products, min);
-    
+
     // Agregar análisis de negocio
     const analysis = this._analyzeRatingResults(filteredProducts, min);
-    
+
     return {
       products: filteredProducts,
       count: filteredProducts.length,
@@ -178,18 +178,18 @@ class ProductService {
    */
   async searchProductsBySpecification(params) {
     const { spec } = params;
-    
+
     // Validar término de búsqueda
     const searchTerm = validateSearchTerm(spec);
-    
+
     const products = getAllProducts();
-    
+
     // Buscar productos
     const filteredProducts = searchProductsBySpecification(products, searchTerm);
-    
+
     // Agregar análisis de búsqueda
     const analysis = this._analyzeSearchResults(filteredProducts, searchTerm);
-    
+
     return {
       products: filteredProducts,
       count: filteredProducts.length,
@@ -206,29 +206,29 @@ class ProductService {
    */
   _analyzeCategories(products) {
     const categories = {};
-    
+
     products.forEach(product => {
       // Determinar categoría basada en el nombre del producto
       let category = 'Otros';
-      
-      if (product.name.toLowerCase().includes('iphone') || 
+
+      if (product.name.toLowerCase().includes('iphone') ||
           product.name.toLowerCase().includes('galaxy')) {
         category = 'Smartphones';
-      } else if (product.name.toLowerCase().includes('macbook') || 
+      } else if (product.name.toLowerCase().includes('macbook') ||
                  product.name.toLowerCase().includes('dell')) {
         category = 'Laptops';
       } else if (product.name.toLowerCase().includes('ipad')) {
         category = 'Tablets';
-      } else if (product.name.toLowerCase().includes('airpods') || 
+      } else if (product.name.toLowerCase().includes('airpods') ||
                  product.name.toLowerCase().includes('sony')) {
         category = 'Audio';
-      } else if (product.name.toLowerCase().includes('nintendo') || 
+      } else if (product.name.toLowerCase().includes('nintendo') ||
                  product.name.toLowerCase().includes('playstation')) {
         category = 'Gaming';
       } else if (product.name.toLowerCase().includes('apple watch')) {
         category = 'Wearables';
       }
-      
+
       if (!categories[category]) {
         categories[category] = {
           count: 0,
@@ -237,20 +237,20 @@ class ProductService {
           products: []
         };
       }
-      
+
       categories[category].count++;
       categories[category].products.push(product);
     });
-    
+
     // Calcular promedios por categoría
     Object.keys(categories).forEach(category => {
       const catProducts = categories[category].products;
-      categories[category].averagePrice = 
+      categories[category].averagePrice =
         catProducts.reduce((sum, p) => sum + p.price, 0) / catProducts.length;
-      categories[category].averageRating = 
+      categories[category].averageRating =
         catProducts.reduce((sum, p) => sum + p.rating, 0) / catProducts.length;
     });
-    
+
     return categories;
   }
 
@@ -267,7 +267,7 @@ class ProductService {
       premium: { min: 800, max: 1200, count: 0, products: [] },
       luxury: { min: 1200, max: Infinity, count: 0, products: [] }
     };
-    
+
     products.forEach(product => {
       if (product.price < 300) {
         segments.budget.count++;
@@ -283,7 +283,7 @@ class ProductService {
         segments.luxury.products.push(product);
       }
     });
-    
+
     return segments;
   }
 
@@ -300,7 +300,7 @@ class ProductService {
       average: { min: 3.0, max: 4.0, count: 0, percentage: 0 },
       poor: { min: 0, max: 3.0, count: 0, percentage: 0 }
     };
-    
+
     products.forEach(product => {
       if (product.rating >= 4.5) {
         distribution.excellent.count++;
@@ -312,13 +312,13 @@ class ProductService {
         distribution.poor.count++;
       }
     });
-    
+
     // Calcular porcentajes
     const total = products.length;
     Object.keys(distribution).forEach(key => {
       distribution[key].percentage = (distribution[key].count / total) * 100;
     });
-    
+
     return distribution;
   }
 
@@ -340,15 +340,15 @@ class ProductService {
         ]
       };
     }
-    
+
     const avgPrice = products.reduce((sum, p) => sum + p.price, 0) / products.length;
     const avgRating = products.reduce((sum, p) => sum + p.rating, 0) / products.length;
-    
+
     return {
       averagePrice: avgPrice,
       averageRating: avgRating,
       priceRangeUtilization: ((max - min) / (max - min)) * 100,
-      bestValue: products.reduce((best, current) => 
+      bestValue: products.reduce((best, current) =>
         (current.rating / current.price) > (best.rating / best.price) ? current : best
       )
     };
@@ -361,7 +361,7 @@ class ProductService {
    * @param {number} minRating - Rating mínimo
    * @returns {Object} Análisis de resultados
    */
-  _analyzeRatingResults(products, minRating) {
+  _analyzeRatingResults(products, _minRating) {
     if (products.length === 0) {
       return {
         message: 'No se encontraron productos con el rating especificado',
@@ -371,10 +371,10 @@ class ProductService {
         ]
       };
     }
-    
+
     const avgPrice = products.reduce((sum, p) => sum + p.price, 0) / products.length;
     const avgRating = products.reduce((sum, p) => sum + p.rating, 0) / products.length;
-    
+
     return {
       averagePrice: avgPrice,
       averageRating: avgRating,
@@ -400,10 +400,10 @@ class ProductService {
         ]
       };
     }
-    
+
     const avgPrice = products.reduce((sum, p) => sum + p.price, 0) / products.length;
     const avgRating = products.reduce((sum, p) => sum + p.rating, 0) / products.length;
-    
+
     // Encontrar especificaciones más comunes
     const specCounts = {};
     products.forEach(product => {
@@ -413,7 +413,7 @@ class ProductService {
         }
       });
     });
-    
+
     return {
       averagePrice: avgPrice,
       averageRating: avgRating,

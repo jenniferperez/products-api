@@ -18,10 +18,10 @@ const calculateProductStats = (products) => {
       ratingRange: { min: 0, max: 0 }
     };
   }
-  
+
   const prices = products.map(p => p.price);
   const ratings = products.map(p => p.rating);
-  
+
   return {
     total: products.length,
     averagePrice: prices.reduce((sum, price) => sum + price, 0) / prices.length,
@@ -45,7 +45,7 @@ const calculateProductStats = (products) => {
  * @returns {Array} Productos filtrados
  */
 const filterProductsByPriceRange = (products, minPrice, maxPrice) => {
-  return products.filter(product => 
+  return products.filter(product =>
     product.price >= minPrice && product.price <= maxPrice
   );
 };
@@ -89,7 +89,7 @@ const searchProductsBySpecification = (products, spec) => {
   }
   const searchTerm = spec.toLowerCase();
   return products.filter(product => {
-    return Object.values(product.specs).some(value => 
+    return Object.values(product.specs).some(value =>
       value.toLowerCase().includes(searchTerm)
     );
   });
@@ -105,17 +105,17 @@ const searchProductsBySpecification = (products, spec) => {
  */
 const paginateProducts = (products, page, limit, query = '') => {
   let filteredProducts = products;
-  
+
   // Si hay término de búsqueda, filtrar productos
   if (query) {
     filteredProducts = searchProducts(products, query);
   }
-  
+
   // Calcular paginación
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-  
+
   return {
     products: paginatedProducts,
     pagination: {

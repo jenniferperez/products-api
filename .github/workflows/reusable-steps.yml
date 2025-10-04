@@ -1,0 +1,65 @@
+name: Reusable Steps
+
+on:
+  workflow_call:
+
+jobs:
+  shared-preparation:
+    name: Shared Build Setup
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-info.outputs.key }}
+      node-version: ${{ steps.setup.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js with cache
+        id: setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Cache dependency dependencies
+        uses: actions/cache@v4
+        id: cache-info
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          echo "✅ Dependencies installed successfully"
+
+      - name: Verify build
+        run: |
+          npm list --depth=0 > /dev/null
+          echo "✅ Build verification passed"
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p build-artifacts
+          cp -r node_modules build-artifacts/ || true
+          cp package*.json build-artifacts/ || true
+          cp -r src build-artifacts/ || true
+          cp .eslintrc.js jest.config.js build-artifacts/ || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepared-build-${{ github.run_id }}
+          path: build-artifacts/
+          retention-days: 1
+
+package:
+
+published:
+  workflows:
+    reusable-steps@latest:
+      source: .github/workflows/reusable-steps.yml

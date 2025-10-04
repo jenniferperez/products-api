@@ -49,7 +49,7 @@ const asyncHandler = (fn) => {
  */
 const validateProductExists = (productId, getProductById) => {
   const product = getProductById(productId);
-  
+
   if (!product) {
     throw createError(
       `Producto con ID ${productId} no encontrado`,
@@ -57,7 +57,7 @@ const validateProductExists = (productId, getProductById) => {
       'PRODUCT_NOT_FOUND'
     );
   }
-  
+
   return product;
 };
 
@@ -70,18 +70,18 @@ const validateProductExists = (productId, getProductById) => {
  */
 const validateProductsExist = (productIds, getProductsByIds) => {
   const products = getProductsByIds(productIds);
-  
+
   if (products.length !== productIds.length) {
     const foundIds = products.map(p => p.id);
     const missingIds = productIds.filter(id => !foundIds.includes(id));
-    
+
     throw createError(
       `Los siguientes productos no fueron encontrados: ${missingIds.join(', ')}`,
       404,
       'PRODUCTS_NOT_FOUND'
     );
   }
-  
+
   return products;
 };
 

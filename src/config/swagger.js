@@ -27,11 +27,11 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: process.env.NODE_ENV === 'production' 
+        url: process.env.NODE_ENV === 'production'
           ? 'https://tu-api.com' // Cambiar por tu URL de producción
           : 'http://localhost:3000',
-        description: process.env.NODE_ENV === 'production' 
-          ? 'Servidor de producción' 
+        description: process.env.NODE_ENV === 'production'
+          ? 'Servidor de producción'
           : 'Servidor de desarrollo'
       }
     ],
@@ -128,13 +128,13 @@ const setupSwagger = (app) => {
   // Guardar especificación en src/docs
   const fs = require('fs');
   const path = require('path');
-  
+
   try {
     const docsDir = path.join(__dirname, '../docs');
     if (!fs.existsSync(docsDir)) {
       fs.mkdirSync(docsDir, { recursive: true });
     }
-    
+
     const swaggerJsonPath = path.join(docsDir, 'swagger.json');
     fs.writeFileSync(swaggerJsonPath, JSON.stringify(swaggerSpec, null, 2));
     console.log('📄 Documentación Swagger guardada en:', swaggerJsonPath);
@@ -183,11 +183,11 @@ const addResponseExamples = (schema, examples) => {
   if (!schema.content) {
     schema.content = {};
   }
-  
+
   if (!schema.content['application/json']) {
     schema.content['application/json'] = {};
   }
-  
+
   schema.content['application/json'].examples = examples;
   return schema;
 };

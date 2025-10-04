@@ -1,7 +1,7 @@
 const { asyncHandler } = require('../utils');
-const { 
+const {
   productService,
-  businessValidationService 
+  businessValidationService
 } = require('../services');
 
 /**
@@ -12,18 +12,18 @@ const {
  */
 const getProducts = asyncHandler(async (req, res) => {
   const { page, limit, q } = req.query;
-  
+
   try {
     // Validar parámetros usando servicio de validación de negocio
     const validatedPagination = businessValidationService.validatePaginationParams({ page, limit });
     const validatedSearch = businessValidationService.validateSearchParams({ query: q });
-    
+
     // Obtener productos usando servicio de productos
     const result = await productService.getProducts({
       ...validatedPagination,
       ...validatedSearch
     });
-    
+
     // Respuesta exitosa
     res.status(200).json({
       success: true,
@@ -49,11 +49,11 @@ const getProducts = asyncHandler(async (req, res) => {
  */
 const getProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
+
   try {
     // Obtener producto usando servicio de productos
     const result = await productService.getProductById(id);
-    
+
     // Respuesta exitosa
     res.status(200).json({
       success: true,
@@ -78,14 +78,14 @@ const getProduct = asyncHandler(async (req, res) => {
  */
 const getBulkProducts = asyncHandler(async (req, res) => {
   const { ids } = req.query;
-  
+
   try {
     // Validar parámetros usando servicio de validación de negocio
-    const validatedIds = businessValidationService.validateIdsParams({ ids });
-    
+    businessValidationService.validateIdsParams({ ids });
+
     // Obtener productos usando servicio de productos
     const result = await productService.getBulkProducts(ids);
-    
+
     // Respuesta exitosa
     res.status(200).json({
       success: true,
@@ -114,7 +114,7 @@ const getProductStats = asyncHandler(async (req, res) => {
   try {
     // Obtener estadísticas usando servicio de productos
     const stats = await productService.getProductStats();
-    
+
     // Respuesta exitosa
     res.status(200).json({
       success: true,
@@ -138,14 +138,14 @@ const getProductStats = asyncHandler(async (req, res) => {
  */
 const getProductsByPriceRange = asyncHandler(async (req, res) => {
   const { minPrice, maxPrice } = req.query;
-  
+
   try {
     // Validar parámetros usando servicio de validación de negocio
     const validatedPrice = businessValidationService.validatePriceParams({ minPrice, maxPrice });
-    
+
     // Obtener productos usando servicio de productos
     const result = await productService.getProductsByPriceRange(validatedPrice);
-    
+
     // Respuesta exitosa
     res.status(200).json({
       success: true,
@@ -172,14 +172,14 @@ const getProductsByPriceRange = asyncHandler(async (req, res) => {
  */
 const getProductsByRating = asyncHandler(async (req, res) => {
   const { minRating } = req.query;
-  
+
   try {
     // Validar parámetros usando servicio de validación de negocio
     const validatedRating = businessValidationService.validateRatingParams({ minRating });
-    
+
     // Obtener productos usando servicio de productos
     const result = await productService.getProductsByRating(validatedRating);
-    
+
     // Respuesta exitosa
     res.status(200).json({
       success: true,
@@ -206,14 +206,14 @@ const getProductsByRating = asyncHandler(async (req, res) => {
  */
 const searchProductsBySpec = asyncHandler(async (req, res) => {
   const { spec } = req.query;
-  
+
   try {
     // Validar parámetros usando servicio de validación de negocio
     const validatedSpec = businessValidationService.validateSpecificationParams({ spec });
-    
+
     // Obtener productos usando servicio de productos
     const result = await productService.searchProductsBySpecification(validatedSpec);
-    
+
     // Respuesta exitosa
     res.status(200).json({
       success: true,

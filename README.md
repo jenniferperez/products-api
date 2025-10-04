@@ -216,6 +216,25 @@ curl "http://localhost:3000/api/products/1"
 curl "http://localhost:3000/api/products/bulk?ids=1,2,3"
 ```
 
+## 🚀 CI/CD Pipeline
+
+Este proyecto utiliza GitHub Actions para automatizar la construcción, testing y despliegue.
+
+### Jobs del Pipeline
+- **Build**: Construcción con `npm ci`
+- **Lint**: Análisis de código con ESLint
+- **Test**: Suite de tests unitarios con Jest
+- **Coverage**: Reportes de cobertura > 80%
+- **Deploy**: Despliegue automático en Render (solo `main`)
+
+Ver [`src/docs/CI_CD_README.md`](src/docs/CI_CD_README.md) para documentación completa.
+
+### Secrets Requeridos
+```bash
+RENDER_API_KEY=tu-api-key
+RENDER_SERVICE_ID=tu-service-id
+```
+
 ## 🤝 Contribución
 
 1. Fork el proyecto
@@ -223,6 +242,12 @@ curl "http://localhost:3000/api/products/bulk?ids=1,2,3"
 3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
+
+### Requisitos para PR
+- ✅ Tests pasando (`npm test`)
+- ✅ Linting exitoso (`npm run lint`)
+- ✅ Cobertura > 80% (`npm run coverage`)
+- 📚 Documentación actualizada
 
 ## 📄 Licencia
 

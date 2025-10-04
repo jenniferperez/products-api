@@ -22,7 +22,7 @@ const paginationSchema = Joi.object({
       'number.min': 'La página debe ser mayor a 0',
       'number.max': 'La página no puede ser mayor a 1000'
     }),
-  
+
   limit: Joi.number()
     .integer()
     .min(1)
@@ -34,7 +34,7 @@ const paginationSchema = Joi.object({
       'number.min': 'El límite debe ser mayor a 0',
       'number.max': 'El límite no puede ser mayor a 100'
     }),
-  
+
   q: Joi.string()
     .max(100) // Límite de caracteres para prevenir ataques
     .optional()
@@ -72,18 +72,18 @@ const bulkIdsSchema = Joi.object({
     .required()
     .custom((value, helpers) => {
       const ids = value.split(',').map(id => parseInt(id.trim()));
-      
+
       // Validar que no haya más de 20 IDs
       if (ids.length > 20) {
         return helpers.error('custom.maxIds');
       }
-      
+
       // Validar que todos los IDs sean números positivos
       const invalidIds = ids.filter(id => isNaN(id) || id <= 0);
       if (invalidIds.length > 0) {
         return helpers.error('custom.invalidIds');
       }
-      
+
       return ids;
     })
     .messages({

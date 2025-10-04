@@ -10,10 +10,10 @@ const dataUtils = require('./dataUtils');
 module.exports = {
   // Utilidades de manejo de errores
   ...errorUtils,
-  
+
   // Utilidades de validación
   ...validationUtils,
-  
+
   // Utilidades de datos y cálculos
   ...dataUtils
 };

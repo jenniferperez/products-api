@@ -7,9 +7,13 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "lint": "eslint src/",
+    "lint:html": "eslint src/ --format html --output-file reports/eslint-report.html",
+    "lint:json": "eslint src/ --format json --output-file reports/eslint-report.json",
+    "lint:junit": "eslint src/ --format junit --output-file reports/eslint-report.xml",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "coverage": "jest --coverage --ci --watchAll=false --passWithNoTests",
     "test:ci": "jest --ci --coverage --watchAll=false",
     "docs:generate": "swagger-jsdoc -d src/config/swaggerDef.js src/routes/*.js src/app.js -o src/docs/swagger.json",
     "docs:serve": "swagger-ui-serve src/docs/swagger.json",
@@ -31,19 +35,20 @@
   "author": "Tu nombre",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "helmet": "^7.1.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
     "joi": "^17.11.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0",
-    "dotenv": "^16.3.1"
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
     "eslint": "^8.55.0",
-    "jest": "^26.6.3"
+    "eslint-html-reporter": "^0.7.4",
+    "jest": "^26.6.3",
+    "nodemon": "^3.0.2"
   },
   "engines": {
     "node": ">=11.0.0"

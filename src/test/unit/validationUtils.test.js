@@ -2,12 +2,12 @@
  * Tests unitarios para validationUtils
  */
 
-const { 
-  sanitizeInput, 
-  validatePriceRange, 
-  validateRating, 
-  validateSearchTerm, 
-  parseIdsString 
+const {
+  sanitizeInput,
+  validatePriceRange,
+  validateRating,
+  validateSearchTerm,
+  parseIdsString
 } = require('../../utils/validationUtils');
 
 describe('validationUtils', () => {

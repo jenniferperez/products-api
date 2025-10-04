@@ -175,7 +175,7 @@ const startServer = () => {
     console.log(`📚 Documentación: ${getDocsUrl()}`);
     console.log(`🔗 API Base URL: ${getApiBaseUrl()}`);
     console.log('='.repeat(50));
-    
+
     if (isDevelopment()) {
       console.log('🔧 Características de desarrollo habilitadas:');
       console.log('   - Logging de requests');
@@ -197,7 +197,7 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
   console.error('❌ Promesa rechazada no manejada:', reason);
   process.exit(1);
 });

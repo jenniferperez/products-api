@@ -21,11 +21,11 @@ module.exports = {
     },
     servers: [
       {
-        url: process.env.NODE_ENV === 'production' 
+        url: process.env.NODE_ENV === 'production'
           ? 'https://tu-api.com' // Cambiar por tu URL de producción
           : 'http://localhost:3000',
-        description: process.env.NODE_ENV === 'production' 
-          ? 'Servidor de producción' 
+        description: process.env.NODE_ENV === 'production'
+          ? 'Servidor de producción'
           : 'Servidor de desarrollo'
       }
     ],

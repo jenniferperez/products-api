@@ -9,7 +9,7 @@ const businessValidationService = require('./businessValidationService');
 module.exports = {
   // Servicios de productos
   ...productService,
-  
+
   // Servicios de validación de negocio
   ...businessValidationService
 };

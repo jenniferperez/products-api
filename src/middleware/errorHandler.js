@@ -78,7 +78,7 @@ const handleAppError = (error, req, res, next) => {
  * @param {Object} res - Response object
  * @param {Function} next - Next middleware function
  */
-const handleUnhandledError = (error, req, res, next) => {
+const handleUnhandledError = (error, req, res, _next) => {
   // Log del error para debugging
   console.error('Error no controlado:', {
     message: error.message,
@@ -91,7 +91,7 @@ const handleUnhandledError = (error, req, res, next) => {
 
   // En producción, no exponer detalles del error
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   const response = {
     error: {
       message: isDevelopment ? error.message : 'Error interno del servidor',
@@ -158,7 +158,7 @@ const asyncHandler = (fn) => {
 const validateProductExists = (productId) => {
   const { getProductById } = require('../data/products');
   const product = getProductById(productId);
-  
+
   if (!product) {
     throw createError(
       `Producto con ID ${productId} no encontrado`,
@@ -166,7 +166,7 @@ const validateProductExists = (productId) => {
       'PRODUCT_NOT_FOUND'
     );
   }
-  
+
   return product;
 };
 
@@ -179,18 +179,18 @@ const validateProductExists = (productId) => {
 const validateProductsExist = (productIds) => {
   const { getProductsByIds } = require('../data/products');
   const products = getProductsByIds(productIds);
-  
+
   if (products.length !== productIds.length) {
     const foundIds = products.map(p => p.id);
     const missingIds = productIds.filter(id => !foundIds.includes(id));
-    
+
     throw createError(
       `Los siguientes productos no fueron encontrados: ${missingIds.join(', ')}`,
       404,
       'PRODUCTS_NOT_FOUND'
     );
   }
-  
+
   return products;
 };
 

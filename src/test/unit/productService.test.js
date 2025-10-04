@@ -2,7 +2,7 @@
  * Tests unitarios para productService
  */
 
-const { testProducts, testErrors } = require('../fixtures/testData');
+const { testProducts } = require('../fixtures/testData');
 
 // Mock de las dependencias
 jest.mock('../../data/products', () => ({
@@ -27,20 +27,20 @@ jest.mock('../../utils', () => ({
   validateProductsExist: jest.fn()
 }));
 
-const { 
-  getAllProducts, 
-  getProductById, 
-  getProductsByIds, 
-  getPaginatedProducts 
+const {
+  getAllProducts,
+  getProductById,
+  getProductsByIds,
+  getPaginatedProducts
 } = require('../../data/products');
 
-const { 
-  calculateProductStats, 
-  filterProductsByPriceRange, 
-  filterProductsByRating, 
+const {
+  calculateProductStats,
+  filterProductsByPriceRange,
+  filterProductsByRating,
   searchProductsBySpecification,
-  searchProducts,
-  createError,
+  // searchProducts: _searchProducts,
+  // createError: _createError,
   validatePriceRange,
   validateRating,
   validateSearchTerm,

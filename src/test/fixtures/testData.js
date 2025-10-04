@@ -129,13 +129,13 @@ const mockFunctions = {
   getAllProducts: jest.fn(() => testProducts),
   getProductById: jest.fn((id) => testProducts.find(p => p.id === id)),
   getProductsByIds: jest.fn((ids) => testProducts.filter(p => ids.includes(p.id))),
-  searchProducts: jest.fn((query) => 
-    testProducts.filter(p => 
+  searchProducts: jest.fn((query) =>
+    testProducts.filter(p =>
       p.name.toLowerCase().includes(query.toLowerCase()) ||
       p.description.toLowerCase().includes(query.toLowerCase())
     )
   ),
-  getPaginatedProducts: jest.fn((page, limit, query) => ({
+  getPaginatedProducts: jest.fn((page, limit, _query) => ({
     products: testProducts.slice(0, limit),
     pagination: {
       page,

@@ -2,7 +2,7 @@
  * Tests unitarios para productController
  */
 
-const { testProducts, testErrors } = require('../fixtures/testData');
+const { testProducts } = require('../fixtures/testData');
 
 // Mock de las dependencias
 jest.mock('../../services', () => ({
@@ -35,18 +35,18 @@ describe('productController', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockReq = {
       query: {},
       params: {},
       body: {}
     };
-    
+
     mockRes = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis()
     };
-    
+
     mockNext = jest.fn();
   });
 

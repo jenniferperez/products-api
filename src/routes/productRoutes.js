@@ -23,7 +23,7 @@ const {
 } = require('../middleware/validation');
 
 // Importar middleware de seguridad
-const { searchRateLimit } = require('../middleware/security');
+const { searchRateLimit } = require('../config/security');
 
 /**
  * @swagger
@@ -73,7 +73,7 @@ const { searchRateLimit } = require('../middleware/security');
  *           type: object
  *           description: Especificaciones técnicas del producto
  *           example: {"Pantalla": "6.1 pulgadas", "Procesador": "A17 Pro"}
- *     
+ *
  *     Pagination:
  *       type: object
  *       properties:
@@ -104,7 +104,7 @@ const { searchRateLimit } = require('../middleware/security');
  *           type: boolean
  *           description: Indica si hay página anterior
  *           example: false
- *     
+ *
  *     Error:
  *       type: object
  *       properties:
@@ -190,7 +190,7 @@ const { searchRateLimit } = require('../middleware/security');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/', 
+router.get('/',
   sanitizeInput,
   validateQuery(paginationSchema),
   getProducts

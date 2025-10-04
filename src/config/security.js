@@ -15,10 +15,10 @@ const helmetConfig = helmet({
   // Previene ataques XSS mediante Content Security Policy
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      defaultSrc: ['\'self\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\''],
+      scriptSrc: ['\'self\''],
+      imgSrc: ['\'self\'', 'data:', 'https:'],
     },
   },
   // Previene clickjacking estableciendo X-Frame-Options
@@ -36,7 +36,7 @@ const helmetConfig = helmet({
  * En desarrollo permite todos los orígenes, en producción solo dominios específicos
  */
 const corsConfig = cors({
-  origin: process.env.NODE_ENV === 'production' 
+  origin: process.env.NODE_ENV === 'production'
     ? ['https://tu-dominio.com', 'https://www.tu-dominio.com'] // Cambiar por tus dominios de producción
     : true, // En desarrollo permite todos los orígenes
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -99,10 +99,10 @@ const validateOrigin = (req, res, next) => {
   if (process.env.NODE_ENV !== 'production') {
     return next();
   }
-  
+
   const origin = req.get('Origin');
   const allowedOrigins = ['https://tu-dominio.com', 'https://www.tu-dominio.com'];
-  
+
   if (!origin || allowedOrigins.includes(origin)) {
     next();
   } else {

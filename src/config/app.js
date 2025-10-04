@@ -37,16 +37,16 @@ const config = {
 
   // Configuración de seguridad
   security: {
-    corsOrigins: process.env.NODE_ENV === 'production' 
+    corsOrigins: process.env.NODE_ENV === 'production'
       ? ['https://tu-dominio.com', 'https://www.tu-dominio.com']
       : true,
     helmet: {
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
+          defaultSrc: ['\'self\''],
+          styleSrc: ['\'self\'', '\'unsafe-inline\''],
+          scriptSrc: ['\'self\''],
+          imgSrc: ['\'self\'', 'data:', 'https:'],
         },
       },
       frameguard: { action: 'deny' },
@@ -86,14 +86,14 @@ const config = {
 const getConfig = (key) => {
   const keys = key.split('.');
   let value = config;
-  
+
   for (const k of keys) {
     value = value[k];
     if (value === undefined) {
       return undefined;
     }
   }
-  
+
   return value;
 };
 
