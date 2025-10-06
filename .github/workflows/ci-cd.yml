@@ -69,7 +69,9 @@ jobs:
         run: npm run lint
 
       - name: Generate lint reports
-        run: npm run lint:html
+        run: |
+          mkdir -p reports
+          npm run lint:html
 
       - name: Upload lint artifacts
         uses: actions/upload-artifact@v4
