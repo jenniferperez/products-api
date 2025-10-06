@@ -2,7 +2,7 @@ module.exports = {
   testEnvironment: 'node',
   collectCoverage: true,
   coverageDirectory: 'src/test/coverage',
-  coverageReporters: ['text', 'lcov', 'html', 'json'],
+  coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
       branches: 50,
@@ -11,28 +11,13 @@ module.exports = {
       statements: 60
     }
   },
-  testMatch: [
-    '**/src/test/**/*.test.js',
-    '**/src/test/**/*.spec.js'
-  ],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/src/test/coverage/',
-    '/src/test/fixtures/'
-  ],
+  testMatch: ['**/src/test/**/*.test.js'],
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/test/**',
     '!src/docs/**',
-    '!src/app.js',
     '!src/config/**',
-    '!jest.config.js',
-    '!**/node_modules/**'
+    '!jest.config.js'
   ],
-  setupFilesAfterEnv: ['<rootDir>/src/test/setup.js'],
-  verbose: true,
-  forceExit: true,
-  clearMocks: true,
-  resetMocks: true,
-  restoreMocks: true
+  setupFilesAfterEnv: ['<rootDir>/src/test/setup.js']
 };

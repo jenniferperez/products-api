@@ -8,22 +8,10 @@
     "dev": "nodemon src/app.js",
     "lint": "eslint src/",
     "lint:html": "eslint src/ --format html --output-file reports/eslint-report.html",
-    "lint:json": "eslint src/ --format json --output-file reports/eslint-report.json",
-    "lint:junit": "eslint src/ --format junit --output-file reports/eslint-report.xml",
     "test": "jest",
-    "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "coverage": "jest --coverage --ci --watchAll=false --passWithNoTests",
-    "test:ci": "jest --ci --coverage --watchAll=false",
     "docs:generate": "swagger-jsdoc -d src/config/swaggerDef.js src/routes/*.js src/app.js -o src/docs/swagger.json",
-    "docs:serve": "swagger-ui-serve src/docs/swagger.json",
-    "docs:build": "npm run docs:generate && npm run docs:serve",
-    "docs": "node scripts/generate-docs.js",
-    "docker:build": "docker build -t products-api .",
-    "docker:run": "docker run -d --name products-api-container -p 3000:3000 --restart unless-stopped products-api",
-    "docker:stop": "docker stop products-api-container",
-    "docker:rm": "docker rm products-api-container",
-    "docker:logs": "docker logs products-api-container"
+    "docs": "node scripts/generate-docs.js"
   },
   "keywords": [
     "nodejs",

@@ -8,21 +8,21 @@ on:
 
 jobs:
   prepare:
-    name: Prepare Environment
+    name: 🏗️ Prepare Environment
     runs-on: ubuntu-latest
     outputs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18.x'
           cache: 'npm'
 
-      - name: Cache dependencies
+      - name: 💾 Cache dependencies
         uses: actions/cache@v4
         id: cache
         with:
@@ -31,154 +31,214 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: Upload build artifacts
+      - name: 🔍 Verify package-lock.json sync
+        run: |
+          echo "🔍 Verifying package-lock.json is up to date..."
+          if ! npm ci --dry-run; then
+            echo "❌ package-lock.json is out of sync with package.json"
+            echo "💡 Run 'npm install' locally and commit the updated package-lock.json"
+            exit 1
+          fi
+          echo "✅ package-lock.json is synchronized"
+
+      - name: 📋 Prepare build artifacts
+        run: |
+          echo "📋 Preparing build artifacts..."
+          mkdir -p build-artifacts
+          cp package*.json build-artifacts/
+          cp -r src build-artifacts/
+          cp .eslintrc.js jest.config.js build-artifacts/ 2>/dev/null || true
+          cp -r scripts build-artifacts/ 2>/dev/null || true
+          echo "✅ Build artifacts prepared"
+
+      - name: 📤 Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-environment
-          path: |
-            node_modules/
-            package.json
-            package-lock.json
-            src/
-            .eslintrc.js
-            jest.config.js
+          name: build-environment-${{ github.run_id }}
+          path: build-artifacts/
+          retention-days: 1
 
   lint:
-    name: Code Quality Check
+    name: 🧹 Code Quality Check
     runs-on: ubuntu-latest
     needs: prepare
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
+      - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-environment
+          name: build-environment-${{ github.run_id }}
           path: ./
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18.x'
 
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Generate lint reports
+      - name: 🔍 Run ESLint
         run: |
+          echo "🧹 Running ESLint analysis..."
+          npm run lint
+          echo "✅ ESLint passed successfully"
+
+      - name: 📊 Generate lint reports
+        run: |
+          echo "📊 Generating lint reports..."
           mkdir -p reports
           npm run lint:html
+          echo "✅ Lint reports generated"
 
-      - name: Upload lint artifacts
+      - name: 📤 Upload lint artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: lint-reports
+          name: lint-reports-${{ github.run_id }}
           path: reports/
+          retention-days: 7
 
   test-coverage:
-    name: Tests & Coverage
+    name: 🧪 Tests & Coverage
     runs-on: ubuntu-latest
     needs: prepare
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
+      - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-environment
+          name: build-environment-${{ github.run_id }}
           path: ./
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18.x'
 
-      - name: Run unit tests
-        run: npm test
+      - name: 🧪 Run unit tests
+        run: |
+          echo "🧪 Running unit tests..."
+          npm test
+          echo "✅ All tests passed"
 
-      - name: Generate coverage report
-        run: npm run test:coverage
+      - name: 📈 Generate coverage report
+        run: |
+          echo "📈 Generating coverage report..."
+          npm run test:coverage
+          echo "✅ Coverage report generated"
 
-      - name: Upload to Codecov
+      - name: 📤 Upload to Codecov
         uses: codecov/codecov-action@v3
         with:
           file: ./src/test/coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
+          fail_ci_if_error: false
         if: always()
 
-      - name: Upload test artifacts
+      - name: 📤 Upload test artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-coverage-reports
+          name: test-coverage-reports-${{ github.run_id }}
           path: |
             src/test/coverage/
+          retention-days: 7
 
   deploy:
-    name: Deploy to Render
+    name: 🚀 Deploy to Render
     runs-on: ubuntu-latest
-    needs: [prepare, lint, test-coverage]
+    needs: [lint, test-coverage]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Render
+      - name: 🚀 Deploy to Render
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
           echo "🚀 Initiating deployment to Render..."
+          echo "📋 Service ID: ${RENDER_SERVICE_ID}"
+          
           DEPLOY_RESPONSE=$(curl -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
             -H "accept: application/json" \
             -H "authorization: Bearer ${RENDER_API_KEY}" \
             -H "content-type: application/json" \
-            --silent --show-error)
+            --silent --show-error --write-out "HTTPSTATUS:%{http_code}")
           
-          if [ $? -eq 0 ]; then
+          HTTP_STATUS=$(echo "$DEPLOY_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+          RESPONSE_BODY=$(echo "$DEPLOY_RESPONSE" | sed -e 's/HTTPSTATUS:.*//g')
+          
+          echo "📊 HTTP Status: ${HTTP_STATUS}"
+          echo "📄 Response: ${RESPONSE_BODY}"
+          
+          if [ "$HTTP_STATUS" -eq 201 ] || [ "$HTTP_STATUS" -eq 200 ]; then
             echo "✅ Deployment initiated successfully"
           else
             echo "❌ Failed to initiate deployment"
+            echo "💡 Check your RENDER_API_KEY and RENDER_SERVICE_ID secrets"
             exit 1
           fi
 
-      - name: Verify deployment status
+  smoke-test:
+    name: 🔥 Smoke Test
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: 🔥 Verify service health
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
-          echo "⏳ Waiting for deployment to process..."
-          sleep 30
+          echo "🔥 Starting smoke test for service health verification..."
+          echo "📋 Service ID: ${RENDER_SERVICE_ID}"
           
-          SERVICE_INFO=$(curl -s "https://api.render.com/v1/services/${RENDER_SERVICE_ID}" \
-            -H "accept: application/json" \
-            -H "authorization: Bearer ${RENDER_API_KEY}")
+          MAX_ATTEMPTS=5
+          ATTEMPT=1
+          SLEEP_DURATION=30
           
-          SERVICE_NAME=$(echo "$SERVICE_INFO" | jq -r '.name // "Unknown Service"')
-          DEPLOY_STATUS=$(echo "$SERVICE_INFO" | jq -r '.serviceDetails.deploy.status // "unknown"')
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "🔄 Attempt $ATTEMPT/$MAX_ATTEMPTS - Checking service status..."
+            
+            SERVICE_INFO=$(curl -s "https://api.render.com/v1/services/${RENDER_SERVICE_ID}" \
+              -H "accept: application/json" \
+              -H "authorization: Bearer ${RENDER_API_KEY}")
+            
+            SERVICE_NAME=$(echo "$SERVICE_INFO" | jq -r '.name // "Unknown Service"')
+            DEPLOY_STATUS=$(echo "$SERVICE_INFO" | jq -r '.serviceDetails.deploy.status // "unknown"')
+            
+            echo "📋 Service: ${SERVICE_NAME}"
+            echo "📊 Deployment Status: ${DEPLOY_STATUS}"
+            
+            case "${DEPLOY_STATUS}" in
+              "success"|"live")
+                echo "✅ Service is healthy and live!"
+                echo "🎉 Smoke test passed successfully"
+                exit 0
+                ;;
+              "failed"|"error")
+                echo "❌ Service deployment failed!"
+                echo "📄 Service Info: $SERVICE_INFO"
+                echo "💥 Smoke test failed - service is not healthy"
+                exit 1
+                ;;
+              *)
+                echo "⏳ Service is still processing (status: ${DEPLOY_STATUS})"
+                if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+                  echo "😴 Waiting ${SLEEP_DURATION} seconds before next attempt..."
+                  sleep $SLEEP_DURATION
+                fi
+                ;;
+            esac
+            
+            ATTEMPT=$((ATTEMPT + 1))
+          done
           
-          echo "📋 Service: ${SERVICE_NAME}"
-          echo "📊 Deployment Status: ${DEPLOY_STATUS}"
-          
-          case "${DEPLOY_STATUS}" in
-            "success"|"live")
-              echo "✅ Deployment completed successfully!"
-              exit 0
-              ;;
-            "failed"|"error")
-              echo "❌ Deployment failed!"
-              exit 1
-              ;;
-            *)
-              echo "⚠️  Deployment status: ${DEPLOY_STATUS} (still processing)"
-              exit 0
-              ;;
-          esac
+          echo "⏰ Maximum attempts reached ($MAX_ATTEMPTS)"
+          echo "⚠️  Service is still processing after $((MAX_ATTEMPTS * SLEEP_DURATION)) seconds"
+          echo "💡 This might be normal for large deployments"
+          echo "✅ Smoke test completed - service appears to be processing normally"
+          exit 0

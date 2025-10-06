@@ -221,13 +221,13 @@ curl "http://localhost:3000/api/products/bulk?ids=1,2,3"
 Este proyecto utiliza GitHub Actions para automatizar la construcción, testing y despliegue.
 
 ### Jobs del Pipeline
-- **Build**: Construcción con `npm ci`
-- **Lint**: Análisis de código con ESLint
-- **Test**: Suite de tests unitarios con Jest
-- **Coverage**: Reportes de cobertura > 80%
-- **Deploy**: Despliegue automático en Render (solo `main`)
+- **prepare**: Preparación del ambiente y cache
+- **lint**: Análisis de código con ESLint
+- **test-coverage**: Tests unitarios y cobertura
+- **deploy**: Despliegue automático en Render
+- **smoke-test**: Verificación de salud del servicio
 
-Ver [`src/docs/CI_CD_README.md`](src/docs/CI_CD_README.md) para documentación completa.
+Ver [`src/docs/SMOKE_TEST_PIPELINE_GUIDE.md`](src/docs/SMOKE_TEST_PIPELINE_GUIDE.md) para documentación completa.
 
 ### Secrets Requeridos
 ```bash
